@@ -1,0 +1,50 @@
+---
+version: '2.0'
+
+puppet.bootstrap_node:
+    type: direct
+    input:
+        - hostname
+        - username
+        - password
+    tasks:
+        linux_info:
+          # [365, 26]
+          action: puppet-demo.os_detect
+          join: all
+          input:
+            hosts: <% $.hostname %>
+            username: <% $.username %>
+            password: <% $.password %>
+          publish:
+            os_info: <% $.linux_info.stdout %>
+          on-success:
+            - bootstrap_debian: <% $.os_info.distro == 'Debian' %>
+            - bootstrap_debian: <$.os_info.distro == 'Ubuntu' %>
+            - bootstrap_openbsd: <% $.os_info.distro == 'OpenBSD' %>
+            - bootstrap_redhat: <% $.os_info.distro == 'RedHat' %>
+        bootstrap_debian:
+          # [105, 128]
+          action: puppet-demo.bootstrap_debian
+          input:
+            hosts: <% $.hostname %>
+            username: <% $.username %>
+            password: <% $.password %>        
+          on-success:
+            - run_puppet
+        bootstrap_openbsd:
+          # [365, 128]
+          action: puppet-demo.bootstrap_openbsd
+          input:
+            hosts: <% $.hostname %>
+            username: <% $.username %>
+            password: <% $.password %>
+          on-success:
+            - run_puppet
+        bootstrap_redhat:
+          # [625, 128]
+          action: puppet-demo.bootstrap_redhat
+          input:
+            hosts: <% $.hostname %>
+            username: <% $.username %>
+            password: <% $.password %>

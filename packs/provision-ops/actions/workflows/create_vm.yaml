@@ -1,0 +1,91 @@
+---
+version: '2.0'
+
+workflows:
+  main:
+    input:
+      - hostname
+      - instance_type
+      - image_id
+      - subnet_id
+      - key_name
+      - keyfile
+      - dnz_zone
+      - ssh_username
+    type: direct
+    tasks:
+      create_instance:
+        # [365, 26]
+        action: aws.ec2_run_instances
+        input:
+          image_id: <%  $.image_id %>
+          instance_type: <% $.instance_type %>
+          subnet_id: <% $.subnet_id %>
+          key_name: <% $.key_name %>
+        publish:
+          instance_data: <% $.create_instance.result[0][0] %>
+          instance_id: <% $.create_instance.result[0][0].id %>
+          instance_ip: <% $.create_instance.result[0][0].private_ip_address %>
+        on-success:
+          - wait_for_instance
+      wait_for_instance:
+        # [365, 128]
+        action: aws.ec2_wait_for_state
+        input:
+          instance_id: <% $.instance_id %>
+          state: running
+        on-success:
+          - wait_for_ssh
+          - add_name_tag
+          - add_cname
+      wait_for_ssh:
+        # [365, 230]
+        action: linux.wait_for_ssh
+        input:
+          username: <% $.ssh_username %>
+          keyfile: <% $.keyfile %>
+          timeout: 30
+          retries: 20
+          hostname: <% $.instance_ip %>
+        on-success:
+          - set_hostname
+      add_name_tag:
+        # [625, 230]
+        action: aws.ec2_create_tags
+        input:
+          resource_ids: <% $.instance_id %>
+          tags: "Name=<% $.hostname %>
+      add_cname:
+        # [105, 230]
+        action: aws.r53_zone_add_cname
+        input:
+          name: <% $.hostname %>.<% $.dns_zone %>
+          value: <% $.instance_ip %>
+          zone: <% $.dns_zone %>
+        publish:
+          fqdn: <% $.hostname %>.<% $.dns_zone %>
+      set_hostname:
+        # [365, 332]
+        action: aws.set_hostname_cloud
+        input:
+          hosts: <% $.instance_ip %>
+          hostname: <% $.fqdn %>
+        on-success:
+          - reboot
+      reboot:
+        # [365, 434]
+        action: core.remote_sudo
+        input:
+          hosts: <% $.instance_ip %>
+          cmd: reboot
+        on-success:
+          - wait_for_reboot
+      wait_for_reboot:
+        # [365, 536]
+        action: linux.wait_for_ssh
+        input:
+          username: <% $.ssh_username %>
+          keyfile: <% $.keyfile %>
+          timeout: 30
+          retries: 20
+          hostname: <% $.instance_ip %>

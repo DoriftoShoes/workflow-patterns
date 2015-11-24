@@ -1,0 +1,50 @@
+---
+version: '2.0'
+
+workflows:
+  main:
+    input:
+      - service
+      - hostname
+      - port
+      - retries
+      - retry_delay
+    type: direct
+    tasks:
+
+      iptables_block_incoming:
+        # [105, 26]
+        action: core.remote_sudo
+        input:
+          hosts: <% $.hostname %>
+          cmd: iptables -A INPUT -j DROP -p tcp --syn --destination-port >% $.port %>
+        on-success:
+          - count_established_connections
+      count_established_connections:
+        # [105, 128]
+        action: core.remote
+        retry:
+          count: <% $.retries %>
+          delay: <% $.retry_delay %>
+        input:
+          hosts: <% $.hostname %>
+          cmd: netstat -anp | grep -w <% $.port %> | grep ESTABLISHED | wc -l | grep -e "^0$"
+        on-success:
+          - restart_service
+        on-error:
+          - iptables_allow_incoming
+      restart_service:
+        # [175, 230]
+        action: linux.service
+        input:
+          hosts: <% $.hostname %>
+          service: <% $.service %>
+          act: restart
+        on-success:
+          - iptables_allow_incoming
+      iptables_allow_incoming:
+        # [105, 332]
+        action: core.remote_sudo
+        input:
+          hosts: <% $.hostname %>
+          cmd: iptables -D INPUT -j DROP -p tcp --syn --destination-port >% $.port %>

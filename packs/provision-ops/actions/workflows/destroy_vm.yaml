@@ -1,0 +1,43 @@
+---
+version: '2.0'
+
+workflows:
+  main:
+    input:
+      - hostname
+      - dns_zone
+    type: direct
+    tasks:
+      get_instance_cname:
+        # [235, 26]
+        action: linux.dig
+        input:
+          hostname: <% $.hostname %>.<% $.dns_zone %>
+          count: 1
+        publish:
+          instance_cname: <% $.get_instance_cname.result[0] %>
+        on-success:
+          - get_instance_list
+      get_instance_list:
+        # [235, 128]
+        action: aws.ec2_get_all_instances
+        publish:
+          ids: <% $.get_instance_list.result.where(concat($.private_dns_name, .) = $.get_instance_cname.result[0]).select($.id) %>
+        on-success:
+          - terminate_instance
+          - remove_cname
+      terminate_instance:
+        # [105, 230]
+        action: aws.ec2_terminate_instances
+        on-success:
+          - remove_from_monitoring
+      remove_cname:
+        # [365, 230]
+        action: aws.r53_zone_delete_cname
+        on-success:
+          - remove_from_monitoring
+      remove_from_monitoring:
+        # [193, 354]
+        action: sensu.client_delete
+        input:
+          client: <% $.fqdn %>

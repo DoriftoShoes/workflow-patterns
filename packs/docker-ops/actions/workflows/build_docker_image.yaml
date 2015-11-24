@@ -1,0 +1,34 @@
+---
+version: '2.0'
+
+workflows:
+  main:
+    input:
+      - repo
+      - branch
+      - tags
+    type: direct
+    tasks:
+      clone_repo:
+        # [105, 26]
+        action: st2cd.git_clone
+        repo: <% $.repo %>
+        branch: <% $.branch %>
+        hosts: localhost
+        publish:
+          repo_path: <% $.clone_repo.localhost.stdout %>
+        on-success:
+          - build_image
+      build_image:
+        # [105, 128]
+        action: docker.build_image
+        input:
+          dockerfile_path: <% $.repo_path %>/Dockerfile  
+          tags: <% $.tags %>
+        on-success:
+          - push_image
+      push_image:
+        # [105, 230]
+        action: docker.push_image
+        input:
+          repo: 
