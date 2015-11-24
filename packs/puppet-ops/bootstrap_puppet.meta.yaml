@@ -1,0 +1,17 @@
+---
+  name: "bootstrap_puppet"
+  runner_type: "mistral-v2"
+  tags: []
+  enabled: true
+  pack: "puppet-ops"
+  entry_point: "workflows/bootstrap_puppet.yaml"
+  parameters: 
+    username: 
+      required: true
+      type: "string"
+    password: 
+      required: true
+      type: "string"
+    hostname: 
+      required: true
+      type: "string"
