@@ -3,7 +3,7 @@
   runner_type: "mistral-v2"
   tags: []
   enabled: true
-  pack: "default"
+  pack: "docker-ops"
   entry_point: "workflows/build_docker_image.yaml"
   parameters: 
     repo: 

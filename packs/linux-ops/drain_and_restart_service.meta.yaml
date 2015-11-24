@@ -3,7 +3,7 @@
   runner_type: "mistral-v2"
   tags: []
   enabled: true
-  pack: "default"
+  pack: "linux-ops"
   entry_point: "workflows/drain_and_restart_service.yaml"
   parameters: 
     retries: 
