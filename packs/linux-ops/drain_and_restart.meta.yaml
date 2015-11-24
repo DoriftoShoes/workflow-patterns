@@ -1,0 +1,20 @@
+---
+  name: "drain_and_restart_service"
+  runner_type: "mistral-v2"
+  tags: []
+  enabled: true
+  pack: "default"
+  entry_point: "workflows/drain_and_restart_service.yaml"
+  parameters: 
+    retries: 
+      default: 10
+      type: "integer"
+    port: 
+      required: true
+      type: "integer"
+    service: 
+      required: true
+      type: "string"
+    retry_delay: 
+      default: 20
+      type: "integer"
