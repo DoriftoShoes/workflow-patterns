@@ -1,0 +1,30 @@
+---
+  name: "purge_logs"
+  runner_type: "mistral-v2"
+  tags: []
+  enabled: true
+  pack: "default"
+  entry_point: "workflows/purge_logs.yaml"
+  parameters: 
+    raw_payload: 
+      type: "string"
+    event_id: 
+      type: "string"
+    file_extension: 
+      default: ".log"
+      type: "string"
+    hostname: 
+      required: true
+      type: "string"
+    check_name: 
+      type: "string"
+    alert_message: 
+      type: "string"
+    directory: 
+      default: "/var/log"
+      type: "string"
+    threshold: 
+      default: 50
+      type: "integer"
+    service: 
+      type: "string"
