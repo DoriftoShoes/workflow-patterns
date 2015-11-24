@@ -1,0 +1,16 @@
+---
+  name: "build_docker_image"
+  runner_type: "mistral-v2"
+  tags: []
+  enabled: true
+  pack: "default"
+  entry_point: "workflows/build_docker_image.yaml"
+  parameters: 
+    repo: 
+      required: true
+      type: "string"
+    branch: 
+      required: true
+      type: "string"
+    tags: 
+      type: "string"
