@@ -1,0 +1,30 @@
+---
+  name: "create_vm"
+  runner_type: "mistral-v2"
+  tags: []
+  enabled: true
+  pack: "provision-ops"
+  entry_point: "workflows/create_vm.yaml"
+  parameters: 
+    image_id: 
+      required: true
+      type: "string"
+    subnet_id: 
+      required: true
+      type: "string"
+    key_name: 
+      required: true
+      type: "string"
+    hostname: 
+      required: true
+      type: "string"
+    instance_type: 
+      type: "string"
+    base_user: 
+      type: "string"
+    keyfile: 
+      required: true
+      type: "string"
+    dons_zone: 
+      required: true
+      type: "string"
