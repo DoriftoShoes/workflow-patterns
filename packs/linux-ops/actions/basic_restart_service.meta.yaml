@@ -1,0 +1,19 @@
+---
+  name: "restart_service"
+  pack: "linux-ops"
+  runner_type: "mistral-v2"
+  enabled: true
+  parameters: 
+    hostname: 
+      type: "string"
+      description: "The host to restart the service on."
+      required: true
+    service: 
+      type: "string"
+      description: "The service to be restarted."
+      required: true
+    check: 
+      type: "string"
+      description: "The sensu check name to be silenced."
+  ref: "default.restart_service"
+  entry_point: "workflows/restart_service.yaml"
