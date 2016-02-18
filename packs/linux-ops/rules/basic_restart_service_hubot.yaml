@@ -1,0 +1,22 @@
+---
+  action: 
+    parameters: 
+      check: "{{trigger.check.name}}"
+      hostname: "{{trigger.client.name}}"
+      service: "hubot"
+    ref: "default.restart_service"
+  criteria: 
+    trigger.check.name: 
+      pattern: "process_hubot"
+      type: "matchregex"
+  enabled: true
+  name: "restart_service"
+  pack: "default"
+  tags: []
+  trigger: 
+    parameters: {}
+    ref: "sensu.event_handler"
+    type: "sensu.event_handler"
+  type: 
+    parameters: {}
+    ref: "standard"
