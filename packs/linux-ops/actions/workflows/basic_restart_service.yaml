@@ -1,7 +1,7 @@
 ---
 version: '2.0'
 
-default.restart_service:
+linux-ops.restart_service:
   input:
     - hostname
     - service
