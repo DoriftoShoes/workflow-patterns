@@ -1,0 +1,60 @@
+---
+version: '2.0'
+
+default.restart_service:
+  input:
+    - hostname
+    - service
+    - check
+  tasks:
+    restart_service:
+      # [255, 128]
+      action: core.remote_sudo
+      input:
+        hosts: <% $.hostname %>
+        cmd: service <% $.service %> restart
+      on-success:
+        - sleep
+      on-error:
+        - failure_message
+    sleep:
+      # [185, 230]
+      action: core.local
+      input:
+        cmd: sleep 5
+      on-success:
+        - check_service
+      on-error:
+        - failure_message
+    check_service:
+      # [115, 332]
+      action: core.remote_sudo
+      input:
+        hosts: <% $.hostname %>
+        cmd: service <% $.service %> status
+      on-success:
+        - success_message
+      on-error:
+        - failure_message
+    success_message:
+      # [105, 434]
+      action: slack.chat.postMessage
+      input:
+        text: <% $.service %> was successfully restarted on <% $.hostname %>.
+        channel: "#opstown"
+    failure_message:
+      # [375, 434]
+      action: slack.chat.postMessage
+      input:
+        text: <% $.service %> could not be restarted on %< $.hostname %>!
+        channel: "#opstown"
+    sensu_silence:
+      # [255, 26]
+      action: sensu.silence
+      input:
+        client: <% $.hostname %>
+        check: <% $.check %>
+      on-success:
+        - restart_service
+      on-error:
+        - restart_service
